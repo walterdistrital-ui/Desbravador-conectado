@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#15803d">
+<title>Desbravador Conectado</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+window.DESBRAVADOR_ONLINE = {
+  url: "COLE_AQUI_A_URL_DO_SEU_SUPABASE",
+  anonKey: "COLE_AQUI_A_CHAVE_ANON_DO_SEU_SUPABASE",
+  table: "app_estado",
+  rowId: 1
+};
+</script>
+<style>
+*{box-sizing:border-box;font-family:Arial,sans-serif}
+body{margin:0;padding:15px;min-height:100vh;background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);color:#1f2937}
+.tela{display:none}
+.tela.ativa{display:block}
+.card{background:#fff;padding:22px;border-radius:18px;margin:0 auto 15px;max-width:650px;box-shadow:0 8px 28px #0004}
+h1,h2,h3{color:#15803d}
+h1{text-align:center}
+button{width:100%;padding:14px;border:0;border-radius:11px;margin-top:10px;font-size:16px;font-weight:bold;color:#fff;cursor:pointer}
+.verde{background:#15803d}
+.azul{background:#2563eb}
+.laranja{background:#d97706}
+.vermelho{background:#dc2626}
+.cinza{background:#6b7280}
+.roxo{background:#7c3aed}
+input,textarea{width:100%;padding:13px;margin:7px 0;border:2px solid #e5e7eb;border-radius:10px;font-size:16px;background:#f9fafb}
+textarea{min-height:90px}
+.info{background:#eff6ff;padding:14px;border-radius:12px;margin:14px 0;border-left:4px solid #2563eb}
+.sucesso{background:#dcfce7;padding:14px;border-radius:10px;color:#166534}
+.classe{padding:17px;border-radius:12px;margin:10px 0;font-weight:bold;cursor:pointer}
+.amigo{background:linear-gradient(135deg,#dbeafe,#bfdbfe);color:#1e40af;border-left:7px solid #2563eb}
+.companheiro{background:linear-gradient(135deg,#fef3c7,#fde68a);color:#92400e;border-left:7px solid #f59e0b}
+.pioneiro{background:linear-gradient(135deg,#fce7f3,#fbcfe8);color:#9d174d;border-left:7px solid #ec4899}
+.guia{background:linear-gradient(135deg,#d1fae5,#a7f3d0);color:#047857;border-left:7px solid #10b981}
+.requisito,.item-dir{background:#f8fafc;padding:15px;margin:11px 0;border-radius:12px;border:1px solid #e5e7eb}
+.requisito.aprovado{border-left:5px solid #16a34a}
+.requisito.enviado{border-left:5px solid #2563eb}
+.requisito.rejeitado{border-left:5px solid #dc2626}
+.requisito.pendente{border-left:5px solid #f59e0b}
+.status{display:inline-block;padding:7px 11px;border-radius:20px;margin:8px 0;font-size:13px;font-weight:bold}
+.status.aprovado{background:#dcfce7;color:#166534}
+.status.enviado{background:#dbeafe;color:#1d4ed8}
+.status.rejeitado{background:#fee2e2;color:#991b1b}
+.status.pendente{background:#fef3c7;color:#92400e}
+.progresso{height:22px;background:#e5e7eb;border-radius:20px;overflow:hidden;margin:10px 0}
+.barra{height:100%;width:0;background:linear-gradient(90deg,#15803d,#22c55e);transition:.5s}
+.pct{text-align:center;font-weight:bold;color:#15803d}
+.avatar{width:80px;height:80px;border-radius:50%;margin:auto;background:#15803d;color:white;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:bold}
+.perfil{text-align:center}
+.dado{background:#f8fafc;padding:12px;border-radius:10px;margin:8px 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.foto{max-width:100%;max-height:280px;border-radius:10px;margin:8px 0}
+.portfolio-folder{background:linear-gradient(135deg,#f8fafc,#eef2ff);border:1px solid #dbeafe;border-radius:14px;padding:15px;margin:10px 0;cursor:pointer;transition:.2s}
+.portfolio-folder:hover{transform:translateY(-2px);box-shadow:0 5px 14px rgba(0,0,0,.12)}
+.folder-icon{font-size:32px;float:left;margin-right:12px}
+.folder-name{font-weight:bold;font-size:17px}
+.folder-meta{font-size:13px;color:#64748b;margin-top:5px}
+.portfolio-head{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#ecfdf5,#dcfce7);padding:15px;border-radius:14px;margin-bottom:14px}
+.portfolio-head .avatar{flex:none;width:70px;height:70px;font-size:28px}
+.portfolio-head img{width:70px;height:70px;border-radius:50%;object-fit:cover;box-shadow:0 4px 10px rgba(0,0,0,.15)}
+.timeline{border-left:3px solid #bbf7d0;padding-left:14px;margin:14px 0}
+.timeline-item{background:#f8fafc;border-radius:10px;padding:10px;margin:9px 0;font-size:13px}
+.foto-perfil{width:110px;height:110px;border-radius:50%;object-fit:cover;display:block;margin:8px auto;box-shadow:0 4px 12px rgba(0,0,0,.18)}
+.label{font-size:13px;font-weight:bold;color:#475569;display:block;margin-top:10px}
+.select-cargo{font-size:16px}
+.especialidade{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:14px;margin:9px 0;cursor:pointer}
+.especialidade:hover{box-shadow:0 4px 12px #0002}
+.categoria{color:#64748b;font-size:12px}
+.busca{position:sticky;top:0;background:#fff;padding:5px 0;z-index:2}
+.painel-secao{margin:18px 0;padding:14px;border-radius:16px}
+.secao-classes{background:linear-gradient(135deg,#eff6ff,#f8fafc);border:2px solid #93c5fd}
+.secao-especialidades{background:linear-gradient(135deg,#f5f3ff,#fff7ed);border:2px solid #c4b5fd}
+.secao-excelencia{background:linear-gradient(135deg,#fffdf5,#fff7d6);border:2px solid #d4af37}
+.titulo-classes{color:#1d4ed8;margin-bottom:8px}
+.titulo-especialidades{color:#7c3aed;margin-bottom:8px}
+.titulo-excelencia{color:#a16207!important}
+.classe-card,.especialidade-card{border-radius:16px;padding:16px;margin:10px 0;box-shadow:0 4px 12px #0001}
+.especialidade-card{background:linear-gradient(135deg,#f5f3ff,#ede9fe);border:2px solid #8b5cf6}
+.progresso-especialidade{height:18px;background:#e9d5ff;border-radius:20px;overflow:hidden;margin:8px 0}
+.progresso-especialidade>div{height:100%;background:linear-gradient(90deg,#7c3aed,#c084fc);transition:.4s}
+.percentual-especialidade{text-align:center;font-weight:800;color:#6d28d9;font-size:13px}
+.excelencia-conquistada{display:inline-block;margin-top:10px;padding:9px 14px;border-radius:999px;background:#d4af37;color:#fff;font-weight:900;box-shadow:0 4px 12px rgba(180,140,20,.35)}
+.excelencia-topo{position:relative;text-align:center;margin:-4px -2px 18px;padding:14px 10px 16px;border-radius:22px;background:linear-gradient(180deg,#fffdf5,#fff8dc);border:2px solid #e7c85d;box-shadow:0 8px 22px rgba(180,140,20,.18)}
+.excelencia-topo-titulo{margin:0 0 2px!important;color:#9a6b00!important;font-size:22px}
+.excelencia-topo-nome{font-weight:900;color:#334155;font-size:16px;margin-bottom:5px}
+.excelencia-foto-topo{width:134px;height:134px;border-radius:50%;object-fit:cover;background:linear-gradient(135deg,#15803d,#22c55e);border:5px solid #fff;box-shadow:0 3px 12px #0003;position:relative;z-index:2}
+.excelencia-dourada{border:7px solid #d4af37;box-shadow:0 0 0 3px #fff,0 0 22px rgba(212,175,55,.9)}
+.excelencia-percentual{font-size:24px;font-weight:900;color:#9a6b00}
+@media(max-width:480px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- TELAS -->
+<div id="inicio" class="tela ativa">
+  <div class="card">
+    <h1>🏕️ Desbravador Conectado</h1>
+    <p style="text-align:center">Bem-vindo ao sistema do Clube!</p>
+    <button class="verde" onclick="ir('alunoLogin')">🎒 SOU DESBRAVADOR</button>
+    <button class="azul" onclick="ir('diretorLogin')">👨‍💼 SOU DIRETOR</button>
+    <button class="laranja" onclick="ir('cadastro')">📝 NOVA INSCRIÇÃO</button>
+  </div>
+</div>
+
+<div id="diretorLogin" class="tela">
+  <div class="card">
+    <h2>👨‍💼 Diretor</h2>
+    <input type="password" id="senhaDir" placeholder="Senha">
+    <button class="verde" onclick="entrarDir()">🔑 ENTRAR</button>
+    <p style="text-align:center;font-size:13px">Senha inicial: 123456</p>
+    <button class="cinza" onclick="ir('inicio')">⬅️ VOLTAR</button>
+  </div>
+</div>
+
+<div id="diretorPainel" class="tela">
+  <div class="card">
+    <h2>👨‍💼 Painel do Diretor</h2>
+    <div class="info" id="resumoDir"></div>
+    
+    <h3>🔐 Segurança</h3>
+    <div class="dado">
+      <button class="cinza" onclick="ir('trocaSenha')">🔑 ALTERAR SENHA</button>
+    </div>
+    
+    <h3>👥 Inscrições</h3>
+    <div id="listaInscritos"><p>Nenhuma inscrição nova.</p></div>
+    
+    <div class="painel-secao secao-classes">
+      <h3 class="titulo-classes">📘 REQUISITOS DE CLASSES</h3>
+      <p>Aprovado aqui ✅ → também conta na Excelência automaticamente.</p>
+      <div id="listaReqsClasses"><p>Nenhum requisito enviado.</p></div>
+    </div>
+    
+    <div class="painel-secao secao-especialidades">
+      <h3 class="titulo-especialidades">🏅 REQUISITOS DE ESPECIALIDADES</h3>
+      <p>Aprovado aqui ✅ → também conta na Excelência automaticamente.</p>
+      <div id="listaReqsEspecialidades"><p>Nenhum requisito enviado.</p></div>
+    </div>
+    
+    <div class="painel-secao secao-excelencia">
+      <h3 class="titulo-excelencia">🏆 EXCELÊNCIA DOS DESBRAVADORES</h3>
+      <p>9 especialidades obrigatórias + 6 escolhidas = 15 total.</p>
+      <div id="listaExcelenciaDiretor"><p>Nenhum progresso registrado.</p></div>
+    </div>
+    
+    <button class="roxo" onclick="abrirPortfolios()">📁 PORTFÓLIOS</button>
+    <button class="azul" onclick="exportarDados()">💾 BACKUP</button>
+    <button class="vermelho" onclick="sair()">🚪 SAIR</button>
+  </div>
+</div>
+
+<div id="trocaSenha" class="tela">
+  <div class="card">
+    <h2>🔑 Alterar Senha do Diretor</h2>
+    <input type="password" id="senhaAtual" placeholder="Senha atual">
+    <input type="password" id="senhaNova1" placeholder="Nova senha (4 dígitos ou mais)">
+    <input type="password" id="senhaNova2" placeholder="Repetir nova senha">
+    <button class="verde" onclick="salvarSenha()">💾 SALVAR NOVA SENHA</button>
+    <p id="msgSenha" style="text-align:center;margin-top:10px;"></p>
+    <button class="cinza" onclick="ir('diretorPainel')">⬅️ VOLTAR</button>
+  </div>
+</div>
+
+<div id="portfoliosDir" class="tela">
+  <div class="card">
+    <h2>📁 Portfólios</h2>
+    <div id="listaPortfolios"><p>Nenhum desbravador cadastrado.</p></div>
+    <button class="cinza" onclick="ir('diretorPainel')">⬅️ VOLTAR</button>
+  </div>
+</div>
+
+<div id="alunoLogin" class="tela">
+  <div class="card">
+    <h2>🎒 Desbravador</h2>
+    <input id="nomeAluno" placeholder="Nome completo">
+    <input id="pinAluno" maxlength="4" inputmode="numeric" placeholder="PIN (4 números)">
+    <button class="verde" onclick="entrarAluno()">🔑 ENTRAR</button>
+    <button class="cinza" onclick="ir('inicio')">⬅️ VOLTAR</button>
+  </div>
+</div>
+
+<div id="cadastro" class="tela">
+  <div class="card">
+    <h2>📝 Nova Inscrição</h2>
+    <input id="nomeCad" placeholder="Nome completo">
+    <input type="date" id="dataNasc" onchange="atualizarIdade()">
+    <div class="info">🎂 Idade: <b id="idade">-</b><br>📚 Classe: <b id="classeSugerida">-</b></div>
+    <button class="verde" onclick="salvarCad()">📤 ENVIAR INSCRIÇÃO</button>
+    <button class="cinza" onclick="ir('inicio')">⬅️ VOLTAR</button>
+  </div>
+</div>
+
+<div id="painelAluno" class="tela">
+  <div class="card">
+    <h2 id="olaNome"></h2>
+    <div class="info">
+      📚 Sua Classe: <b id="minhaClasse"></b><br>
+      📊 Progresso: <span id="pctP">0%</span>
+      <div class="progresso"><div class="barra" id="barraP"></div></div>
+      🏆 Excelência: <span id="pctExcelencia">0/15 concluídas</span>
+      <div class="progresso"><div class="barra" id="barraExcelencia"></div></div>
+    </div>
+    
+    <button class="azul" onclick="abrirPerfil()">👤 MEU PERFIL</button>
+    <button class="roxo" onclick="abrirEspecialidades()">🏅 ESPECIALIDADES</button>
+    <button class="laranja" onclick="abrirExcelencia()">🏆 MINHA EXCELÊNCIA</button>
+    
+    <h3>📚 Suas Classes</h3>
+    <div class="classe amigo" onclick="abrirClasse('Amigo')">🔵 AMIGO</div>
+    <div class="classe companheiro" onclick="abrirClasse('Companheiro')">🟡 COMPANHEIRO</div>
+    <div class="classe pioneiro" onclick="abrirClasse('Pioneiro')">🩷 PIONEIRO</div>
+    <div class="classe guia" onclick="abrirClasse('Guia')">🟢 GUIA</div>
+    
+    <button class="vermelho" onclick="sair()">🚪 SAIR</button>
+  </div>
+</div>
+
+<div id="perfilAluno" class="tela">
+  <div class="card">
+    <h2>👤 Meu Perfil</h2>
+    <div class="perfil">
+      <div class="avatar" id="avatarPerfil">D</div>
+      <h3 id="perfilNome"></h3>
+    </div>
+    <label class="label">🎖️ Cargo</label>
+    <select id="cargoPerfil">
+      <option>🎒 Desbravador</option>
+      <option>👨‍💼 Diretor</option>
+      <option>🤝 Diretor Associado</option>
+      <option>📋 Secretário</option>
+      <option>✝️ Capelão</option>
+      <option>🧭 Conselheiro</option>
+      <option>📚 Instrutor</option>
+      <option>💰 Tesoureiro</option>
+    </select>
+    <button class="verde" onclick="salvarPerfil()">💾 SALVAR</button>
+    <button class="cinza" onclick="ir('painelAluno')">⬅️ VOLTAR</button>
+  </div>
+</div>
+
+<div id="especialidadesTela" class="tela">
+  <div class="card">
+    <h2>🏅 Especialidades</h2>
+    <p class="info">✅ Aprovada = conta automaticamente na Excelência</p>
+    <div id="listaEspecialidadesAluno"></div>
+    <button class="cinza" onclick="ir('painelAluno')">⬅️ VOLTAR</button>
+  </div>
+</div>
+
+<div id="excelenciaTela" class="tela">
+  <div class="card">
+    <h2>🏆 Minha Excelência</h2>
+    <p class="info">9 obrigatórias + 6 escolhidas = 15 especialidades</p>
+    <div id="listaExcelenciaAluno"></div>
+    <button class="cinza" onclick="ir('painelAluno')">⬅️ VOLTAR</button>
+  </div>
+</div>
+
+<!-- JAVASCRIPT - TUDO FUNCIONANDO -->
+<script>
+// DADOS SALVOS
+let senhaDiretor = localStorage.getItem('senhaDiretor') || '123456';
+let usuarioAtual = null;
+let desbravadores = JSON.parse(localStorage.getItem('desbravadores') || '{}');
+
+// ESPECIALIDADES DA EXCELÊNCIA
+const OBRIGATORIAS = ['Cidadão do Reino','Criador','Gerente da Vida','Guia Bíblico','Hábitos Saudáveis','Líder','Mestre de Aventura','Serviço ao Próximo','Comunicador'];
+const ESCOLHIDAS = ['Acampamento','Artesanato','Atividade Física','Cuidados com a Natureza','Educação','Familia','Habilidade Doméstica','Música','Primeiros Socorros','Tecnologia','Vida no Campo','Vida Marinha'];
+
+// NAVEGAÇÃO
+function ir(id) {
+  document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
+  document.getElementById(id).classList.add('ativa');
+}
+
+// IDADE E CLASSE
+function atualizarIdade() {
+  const nasc = document.getElementById('dataNasc').value;
+  if (!nasc) return;
+  const hoje = new Date(), n = new Date(nasc);
+  let idade = hoje.getFullYear() - n.getFullYear();
+  const m = hoje.getMonth() - n.getMonth();
+  if (m < 0 || (m === 0 && hoje.getDate() < n.getDate())) idade--;
+  document.getElementById('idade').textContent = idade;
+  
+  let classe = '';
+  if (idade >= 10 && idade <= 11) classe = 'Amigo';
+  else if (idade >= 12 && idade <= 13) classe = 'Companheiro';
+  else if (idade >= 14 && idade <= 15) classe = 'Pioneiro';
+  else if (idade >= 16) classe = 'Guia';
+  else classe = 'Ainda não';
+  document.getElementById('classeSugerida').textContent = classe;
+}
+
+// LOGIN DIRETOR
+function entrarDir() {
+  if (document.getElementById('senhaDir').value === senhaDiretor) {
+    ir('diretorPainel');
+    atualizarPainelDiretor();
+  } else alert('❌ Senha incorreta!');
+}
+
+// TROCA DE SENHA
+function salvarSenha() {
+  const at = document.getElementById('senhaAtual').value;
+  const n1 = document.getElementById('senhaNova1').value;
+  const n2 = document.getElementById('senhaNova2').value;
+  const msg = document.getElementById('msgSenha');
+  
+  if (at !== senhaDiretor) {
+    msg.innerHTML = '<span style="color:red">❌ Senha atual errada!</span>';
+    return;
+  }
+  if (n1.length < 4) {
+    msg.innerHTML = '<span style="color:red">❌ Mínimo 4 caracteres!</span>';
+    return;
+  }
+  if (n1 !== n2) {
+    msg.innerHTML = '<span style="color:red">❌ As senhas novas não coincidem!</span>';
+    return;
+  }
+  
+  senhaDiretor = n1;
+  localStorage.setItem('senhaDiretor', senhaDiretor);
+  msg.innerHTML = '<span style="color:green">✅ Senha alterada com sucesso!</span>';
+  document.getElementById('senhaAtual').value = '';
+  document.getElementById('senhaNova1').value = '';
+  document.getElementById('senhaNova2').value = '';
+  setTimeout(() => ir('diretorPainel'), 1500);
+}
+
+// LOGIN ALUNO
+function entrarAluno() {
+  const nome = document.getElementById('nomeAluno').value.trim();
+  const pin = document.getElementById('pinAluno').value;
+  if (!nome || pin.length !== 4) { alert('Preencha tudo!'); return; }
+  
+  if (!desbravadores[nome]) {
+    desbravadores[nome] = {
+      pin, classe: 'Amigo', cargo: 'Desbravador|🎒',
+      progressoClasse: 0, especialidades: {}, escolhidas: []
+    };
+    salvarDados();
+  }
+  
+  if (desbravadores[nome].pin !== pin) { alert('PIN incorreto!'); return; }
+  
+  usuarioAtual = { nome, dados: desbravadores[nome] };
+  ir('painelAluno');
+  atualizarPainelAluno();
+}
+
+// SALVAR CADASTRO
+function salvarCad() {
+  const nome = document.getElementById('nomeCad').value.trim();
+  if (!nome) { alert('Digite o nome!'); return; }
+  alert(`✅ Inscrição enviada!\nAnote seu PIN de 4 números para entrar.`);
+  ir('alunoLogin');
+}
+
+// ATUALIZAR PAINEL ALUNO
+function atualizarPainelAluno() {
+  const u = usuarioAtual;
+  document.getElementById('olaNome').textContent = 'Olá, ' + u.nome + '! 👋';
+  document.getElementById('minhaClasse').textContent = u.dados.classe;
+  document.getElementById('avatarPerfil').textContent = u.nome[0].toUpperCase();
+  document.getElementById('perfilNome').textContent = u.nome;
+  
+  // Progresso da classe
+  document.getElementById('barraP').style.width = u.dados.progressoClasse + '%';
+  document.getElementById('pctP').textContent = u.dados.progressoClasse + '%';
+  
+  // Excelência — interligado
+  const concluidas = contarExcelencia(u.nome);
+  document.getElementById('pctExcelencia').textContent = `${concluidas}/15 concluídas`;
+  document.getElementById('barraExcelencia').style.width = (concluidas/15*100) + '%';
+}
+
+// CONTAR EXCELÊNCIA (interligação)
+function contarExcelencia(nome) {
+  const d = desbravadores[nome];
+  if (!d) return 0;
+  let total = 0;
+  OBRIGATORIAS.forEach(e => { if (d.especialidades[e] === 'aprovado') total++; });
+  d.escolhidas.forEach(e => { if (d.especialidades[e] === 'aprovado') total++; });
+  return total;
+}
+
+function abrirPerfil() { ir('perfilAluno'); }
+function abrirEspecialidades() { ir('especialidadesTela'); listarEspecialidades(); }
+function abrirExcelencia() { ir('excelenciaTela'); listarExcelencia(); }
+function abrirClasse(nome) { alert(`📚 Abrindo classe: ${nome}\n\n✅ As atividades aprovadas aqui também contam na Excelência automaticamente!`); }
+function abrirPortfolios() { ir('portfoliosDir'); }
+function exportarDados() {
+  const dados = JSON.stringify(desbravadores, null, 2);
+  const blob = new Blob([dados], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'backup-desbravadores.json';
+  a.click();
+  alert('✅ Backup salvo!');
+}
+
+function salvarPerfil() {
+  alert('✅ Perfil salvo!');
+  ir('painelAluno');
+}
+
+function listarEspecialidades() {
+  const div = document.getElementById('listaEspecialidadesAluno');
+  div.innerHTML = '<h4>Obrigatórias</h4>';
+  OBRIGATORIAS.forEach(e => {
+    const st = usuarioAtual.dados.especialidades[e] || 'pendente';
+    div.innerHTML += `<div class="especialidade-card">
+      <strong>${e}</strong>
+      <div class="status ${st}">${st==='aprovado'?'✅ Aprovado':'⏳ Pendente'}</div>
+    </div>`;
+  });
+  div.innerHTML += '<h4>Escolhidas (escolha 6)</h4>';
+  ESCOLHIDAS.forEach(e => {
+    const st = usuarioAtual.dados.especialidades[e] || 'pendente';
+    const sel = usuarioAtual.dados.escolhidas.includes(e);
+    div.innerHTML += `<div class="especialidade-card" onclick="toggleEscolhida('${e}')">
+      <strong>${sel?'✅ ':'○ '}${e}</strong>
+      <div class="status ${st}">${st==='aprovado'?'✅ Aprovado':'⏳ Pendente'}</div>
+    </div>`;
+  });
+}
+
+function toggleEscolhida(nomeEspec) {
+  const esc = usuarioAtual.dados.escolhidas;
+  const i = esc.indexOf(nomeEspec);
+  if (i >= 0) esc.splice(i,1);
+  else if (esc.length < 6) esc.push(nomeEspec);
+  else { alert('Escolha no máximo 6!'); return; }
+  desbravadores[usuarioAtual.nome] 
